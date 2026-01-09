@@ -1,0 +1,11 @@
+# Ignore object files (compiled parts)
+*.o
+
+# Ignore the final binary
+*.bin
+
+# Ignore the disk image
+*.iso
+
+# Ignore the ISO directory structure we made
+isodir/
