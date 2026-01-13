@@ -227,7 +227,7 @@ void execute_command() {
     terminal_writestring(" - hello: Say hello\n");
     terminal_writestring(" - reboot: reboots the computer\n");
   } else if (strcmp(input_buffer, "hello") == 0) {
-    terminal_writestring("Hello, Human! I am your Kernel.\n");
+    terminal_writestring("Hello, This is a basic kernel.\n");
   } else if (strcmp(input_buffer, "reboot") == 0) {
     reboot();
   } else if (buffer_index > 0) {
