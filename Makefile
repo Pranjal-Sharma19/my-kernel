@@ -1,42 +1,44 @@
-# Makefile
-# Compiler and Linker
+# Makefile - Final Version
 CC = gcc
 ASM = nasm
 LD = ld
 
-# Flags
-# -m32: 32-bit mode
-# -ffreestanding: No standard library
-# -O0: No optimizations (easier debugging)
-# -fno-*: Disable modern security features that require an OS
-# -mno-*: Disable fancy CPU instructions (SSE/MMX)
+# Compiler Flags (Force 32-bit, disable Linux features)
 CFLAGS = -m32 -ffreestanding -O0 -Wall -Wextra -fno-stack-protector -fno-pie -mno-sse -mno-mmx -mno-80387
 LDFLAGS = -m elf_i386 -T linker.ld
 
 # Files
 SOURCES = kernel.c
 OBJECTS = boot.o kernel.o
-TARGET = myos.bin
+TARGET_BIN = myos.bin
+TARGET_ISO = myos.iso
 
-# Default Rule
-all: $(TARGET)
+all: $(TARGET_BIN)
 
-# Compile Assembly
+# 1. Compile Assembly
 boot.o: boot.s
 	$(ASM) -felf32 boot.s -o boot.o
 
-# Compile C
+# 2. Compile C
 kernel.o: $(SOURCES)
 	$(CC) $(CFLAGS) -c $(SOURCES) -o kernel.o
 
-# Link
-$(TARGET): $(OBJECTS)
-	$(LD) $(LDFLAGS) -o $(TARGET) $(OBJECTS)
+# 3. Link Kernel
+$(TARGET_BIN): $(OBJECTS)
+	$(LD) $(LDFLAGS) -o $(TARGET_BIN) $(OBJECTS)
 
-# Run in QEMU
-run: $(TARGET)
-	qemu-system-i386 -kernel $(TARGET) -display gtk
+# 4. Create ISO (For Ventoy)
+iso: $(TARGET_BIN)
+	mkdir -p isodir/boot/grub
+	cp $(TARGET_BIN) isodir/boot/$(TARGET_BIN)
+	echo 'menuentry "MyOS" { multiboot /boot/$(TARGET_BIN) }' > isodir/boot/grub/grub.cfg
+	grub-mkrescue -o $(TARGET_ISO) isodir
 
-# Clean up
+# 5. Run in QEMU
+run: $(TARGET_BIN)
+	qemu-system-i386 -kernel $(TARGET_BIN) -display gtk
+
+# Cleanup
 clean:
-	rm -f *.o $(TARGET)
+	rm -f *.o *.bin *.iso
+	rm -rf isodir
